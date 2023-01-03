@@ -7,9 +7,10 @@ import {
   IonButtons,
   IonBackButton
 } from '@ionic/react';
-import React from 'react';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { entries } from '../data';
+import { firestore } from '../firebase';
 
 interface RouteParams{
   id: string;
@@ -19,10 +20,19 @@ interface RouteParams{
 const EntryPage: React.FC = () => {
 
   const {id} = useParams<RouteParams>();
-  const entry = entries.find((entry) => entry.id ===id);
-  if(!entry){
-    throw new Error (`No such entry: ${id}`)
-  }
+  
+  const [entry, setEntry] = useState<any>();
+
+  useEffect(() => {
+    const entriesRef = collection(firestore , 'entries');
+    const docRef = doc(entriesRef,id);
+    getDoc(docRef).then((doc) => {
+      const entry = {id: doc.id, ...doc.data()};
+      console.log(entry);
+      
+      setEntry(entry);
+    });
+  }, [id])
   
   return (
     <IonApp>
@@ -31,11 +41,11 @@ const EntryPage: React.FC = () => {
           <IonButtons slot="end">
             <IonBackButton defaultHref='/'/>
           </IonButtons>
-          <IonTitle>{entry.title}</IonTitle>
+          <IonTitle>{entry?.title}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        This is the entry page.
+        {entry?.description}
       </IonContent>
     </IonApp>
   );

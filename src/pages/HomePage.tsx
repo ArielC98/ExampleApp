@@ -10,19 +10,17 @@ import {
 import { collection, getDocs } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import { firestore } from '../firebase';
+import { Entry, toEntry } from './models';
 
 const HomePage: React.FC = () => {
 
   //Empty array means our list will be empty until we get the data from firestore
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
   useEffect(() =>{
     const entriesRef = collection(firestore , 'entries');
-    getDocs(entriesRef).then((snapshot) => {
-      const entries = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setEntries(entries);
+    getDocs(entriesRef).then(({docs}) => {
+
+      setEntries(docs.map(toEntry));
     });
   }, []);
 

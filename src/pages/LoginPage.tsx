@@ -37,7 +37,7 @@ const LoginPage: React.FC= () => {
       console.log("credential", credential);
     } catch (error) {
       setStatus({loading: false, error: true});
-      console.log(error);
+      console.log("error: ",error);
       
     }
   }

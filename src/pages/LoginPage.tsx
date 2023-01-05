@@ -6,11 +6,13 @@ import {
   IonItem,
   IonLabel,
   IonList,
+  IonLoading,
   IonPage,
+  IonText,
   IonTitle,
   IonToolbar
 } from '@ionic/react';
-import React from 'react';
+import React, { useState } from 'react';
 import { Redirect } from 'react-router';
 import { useAuth } from '../auth';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -23,12 +25,25 @@ interface Props {
 const LoginPage: React.FC<Props> = ({onLogin}) => {
 
   const {loggedIn} = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [status, setStatus] = useState({loading: false, error: false});
+
 
 
   const handleLogin = async () => {
-    const credential = await signInWithEmailAndPassword(auth, "test1@example.org", "123456");
-    console.log("credential", credential);
-    onLogin();
+  
+    try {
+      setStatus({loading: true, error: false});
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      setStatus({loading: false, error: false});
+      console.log("credential", credential);
+      onLogin();
+    } catch (error) {
+      setStatus({loading: false, error: true});
+      console.log(error);
+      
+    }
   }
 
   if(loggedIn){
@@ -46,15 +61,22 @@ const LoginPage: React.FC<Props> = ({onLogin}) => {
         <IonList>
           <IonItem>
             <IonLabel position="stacked">Email</IonLabel>
-            <IonInput type = "email"/>
+            <IonInput type = "email" value={email}
+              onIonChange = {(event) => setEmail(event.detail.value)}
+            />
           </IonItem>
           <IonItem>
-            <IonLabel position="stacked">Email</IonLabel>
-            <IonInput type = "password"/>
+            <IonLabel position="stacked">Password</IonLabel>
+            <IonInput type = "password" value={password}
+              onIonChange = {(event) => setPassword(event.detail.value)}
+            />
           </IonItem>
         </IonList>
+        {status.error &&
+          <IonText color = "danger">Invalid credentials</IonText>
+        }
         <IonButton expand='block' onClick={handleLogin}>Login</IonButton>
-
+        <IonLoading isOpen = {status.loading}/>
       </IonContent>
     </IonPage>
   );
